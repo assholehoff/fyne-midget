@@ -1,7 +1,6 @@
 package midget
 
 import (
-	// mytheme "UppSpar/internal/ui/theme"
 	"log"
 
 	"fyne.io/fyne/v2"

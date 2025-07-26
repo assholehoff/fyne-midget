@@ -31,8 +31,6 @@ type MiniButtonPair struct {
 }
 
 func NewMiniButtonPair(top, bottom string, ftop, fbot func()) *MiniButtonPair {
-	// "▲"
-	// "▼"
 	i := &MiniButtonPair{
 		LabelTop:    top,
 		LabelBottom: bottom,
@@ -378,23 +376,3 @@ func alignedButtonPosition(align widget.ButtonAlign, padding, objectSize, layout
 	}
 	return
 }
-
-// func newButtonTapAnimation(bg *canvas.Rectangle, w fyne.Widget, th fyne.Theme) *fyne.Animation {
-// 	v := fyne.CurrentApp().Settings().ThemeVariant()
-// 	return fyne.NewAnimation(canvas.DurationStandard, func(done float32) {
-// 		mid := w.Size().Width / 2
-// 		size := mid * done
-// 		bg.Resize(fyne.NewSize(size*2, w.Size().Height))
-// 		bg.Move(fyne.NewPos(mid-size, 0))
-
-// 		r, g, bb, a := col.ToNRGBA(th.Color(theme.ColorNamePressed, v))
-// 		aa := uint8(a)
-// 		fade := aa - uint8(float32(aa)*done)
-// 		if fade > 0 {
-// 			bg.FillColor = &color.NRGBA{R: uint8(r), G: uint8(g), B: uint8(bb), A: fade}
-// 		} else {
-// 			bg.FillColor = color.Transparent
-// 		}
-// 		canvas.Refresh(bg)
-// 	})
-// }
