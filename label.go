@@ -9,6 +9,8 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	ttw "github.com/dweymouth/fyne-tooltip/widget"
+
+	mtheme "github.com/assholehoff/fyne-theme"
 )
 
 var (
@@ -79,6 +81,9 @@ func NewLabelWithStyle(
 		SubStyle:          subStyle,
 		SubPosition:       subPosition,
 		VerticalAlignment: verticalAlignment,
+
+		color:    theme.ColorNameForeground,
+		subcolor: mtheme.ColorNameDiscrete,
 	}
 	label.ExtendBaseWidget(label)
 	label.SetToolTip(tooltip)
