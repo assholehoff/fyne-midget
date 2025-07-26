@@ -2,15 +2,15 @@
 
 Various widgets for the Fyne GUI toolkit. Made or augmented by me.
 
-## NumericEntry
+## NumericEntry[T Number]
 
 An entry with two small buttons for adjusting a bound number.
 
-### FloatEntry
+### NumericEntry\[float64\]
 
 Bindable to a `binding.Float`, or just a `float64`
 
-### IntEntry
+### NumericEntry\[int\]
 
 Bindable to a `binding.Int`, or used with `int` or `int64`
 
