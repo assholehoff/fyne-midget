@@ -1,6 +1,30 @@
 # m(y w)idget(s)
 
 Various widgets for the Fyne GUI toolkit. Made or augmented by me.
+```Go
+type Number interface {
+    ~float64 | ~int | ~int64
+}
+
+type NumericEnterface[T Number] interface {
+    SetMax(v T)
+    SetMin(v T)
+    SetStep(v T)
+    Bind(di binding.DataItem)
+    Unbind()
+}
+
+type NumericEntry[T Number] struct {
+    ttw.ToolTipWidget
+    value           binding.DataItem
+    valString       binding.String
+    valEntry        *widget.Entry
+    valFormatString string
+    miniButtonPair  *MiniButtonPair
+    min, max, step  T
+    validator       func(T) bool
+}
+```
 
 ## `NumericEntry[T Number]`
 
