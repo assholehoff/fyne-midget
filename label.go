@@ -255,47 +255,66 @@ func (r *labelRenderer) Layout(s fyne.Size) {
 	size.Width -= theme.InnerPadding()
 	size.Height -= theme.InnerPadding()
 
-	psize := size
+	primSize := size
 	if !r.label.subInvisible {
-		psize.Height -= r.subtext.MinSize().Height
+		primSize.Height -= r.subtext.MinSize().Height
 	}
 
 	pos := fyne.NewSquareOffsetPos(theme.InnerPadding())
 
-	r.text.Resize(psize)
-
-	ssize := fyne.NewSize(0, 0)
-	if !r.label.subInvisible {
-		ssize = size
-		ssize.Height -= r.text.Size().Height
-		r.subtext.Resize(ssize)
-		if r.label.SubPosition == SubtextAboveText {
-			r.subtext.Move(pos)
-			pos.Y += r.subtext.Size().Height
-		} else {
-			spos := pos
-			spos.Y += r.text.Size().Height
-			r.subtext.Move(spos)
-		}
-	}
+	r.text.Resize(primSize)
 
 	switch r.label.VerticalAlignment {
 	case LabelAlignCenter:
-		// pos.Y = ((s.Height - ssize.Height) - r.text.Size().Height) / 2
-		if r.label.subInvisible {
-			pos.Y = (s.Height - r.text.Size().Height) / 2
-		} else {
+		if !r.label.subInvisible {
+			subSize := size
+			subSize.Height -= r.text.Size().Height
+			r.subtext.Resize(subSize)
 			if r.label.SubPosition == SubtextAboveText {
-				pos.Y = ((s.Height - ssize.Height) - r.text.Size().Height) / 2
-				pos.Y += ssize.Height
+				pos.Y = ((s.Height - subSize.Height) - r.text.Size().Height) / 2
+				r.subtext.Move(pos)
+				pos.Y += subSize.Height
 			} else {
-				pos.Y = ((s.Height - ssize.Height) - r.text.Size().Height) / 2
+				pos.Y = (((s.Height - subSize.Height) - r.text.Size().Height) / 2) - subSize.Height
+				r.subtext.Move(pos)
+				pos.Y += subSize.Height
 			}
+		} else {
+			pos.Y = (s.Height - r.text.Size().Height) / 2
 		}
 	case LabelAlignTop:
-		// fix later
+		pos.Y = theme.InnerPadding()
+		if !r.label.subInvisible {
+			subSize := size
+			subSize.Height -= r.text.Size().Height
+			r.subtext.Resize(subSize)
+			if r.label.SubPosition == SubtextAboveText {
+				r.subtext.Move(pos)
+				pos.Y += subSize.Height
+			} else {
+				pos.Y += r.text.Size().Height
+				r.subtext.Move(pos)
+				pos.Y -= r.text.Size().Height
+			}
+		}
 	case LabelAlignBottom:
-		// fix later
+		pos.Y = size.Height
+		if !r.label.subInvisible {
+			subSize := size
+			subSize.Height -= r.text.Size().Height
+			r.subtext.Resize(subSize)
+			if r.label.SubPosition == SubtextAboveText {
+				pos.Y -= (r.subtext.Size().Height + r.text.Size().Height)
+				r.subtext.Move(pos)
+				pos.Y += r.subtext.Size().Height
+			} else {
+				pos.Y -= r.subtext.Size().Height
+				r.subtext.Move(pos)
+				pos.Y -= r.text.Size().Height
+			}
+		} else {
+			pos.Y -= r.text.Size().Height
+		}
 	}
 
 	r.text.Move(pos)

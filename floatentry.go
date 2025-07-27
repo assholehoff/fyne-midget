@@ -24,15 +24,15 @@ type FloatEntry struct {
 }
 
 func NewFloatEntry() *FloatEntry {
-	return NewFloatEntryWithSpecs(math.MinInt, math.MaxInt, 1)
+	return NewFloatEntryWithSpecs(0, math.MaxFloat64, 0.1)
 }
 func NewFloatEntryWithData(i binding.Float) *FloatEntry {
-	ie := NewFloatEntryWithDataAndSpecs(i, math.MinInt, math.MaxInt, 1)
+	ie := NewFloatEntryWithDataAndSpecs(i, 0, math.MaxFloat64, 0.1)
 	ie.Bind(i)
 	return ie
 }
 func NewFloatEntryWithDataAndSpecs(i binding.Float, min, max, step float64) *FloatEntry {
-	ie := NewFloatEntryWithSpecs(0, math.MaxInt, 1)
+	ie := NewFloatEntryWithSpecs(0, math.MaxFloat64, 1)
 	ie.Bind(i)
 	return ie
 }
@@ -45,7 +45,7 @@ func NewFloatEntryWithSpecs(min, max, step float64) *FloatEntry {
 	ie.Min = min
 	ie.Max = max
 	ie.Step = step
-	ie.FormatString = "%d"
+	ie.FormatString = "%.2f"
 
 	ie.validator = func(i float64) bool {
 		if i >= ie.Min && i <= ie.Max {
