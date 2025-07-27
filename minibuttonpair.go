@@ -20,8 +20,8 @@ type MiniButtonPair struct {
 	topButton    *miniButton
 	bottomButton *miniButton
 
-	LabelTop    string
-	LabelBottom string
+	TopText    string
+	BottomText string
 
 	OnTappedTop    func()
 	OnTappedBottom func()
@@ -32,8 +32,8 @@ type MiniButtonPair struct {
 
 func NewMiniButtonPair(top, bottom string, ftop, fbot func()) *MiniButtonPair {
 	i := &MiniButtonPair{
-		LabelTop:    top,
-		LabelBottom: bottom,
+		TopText:    top,
+		BottomText: bottom,
 
 		OnTappedTop:    ftop,
 		OnTappedBottom: fbot,
@@ -78,11 +78,11 @@ func (i *MiniButtonPair) MinSize() fyne.Size {
 
 /* Refresh implements fyne.Widget. */
 func (i *MiniButtonPair) Refresh() {
-	i.topButton.Label = i.LabelTop
+	i.topButton.Label = i.TopText
 	i.topButton.OnTapped = i.OnTappedTop
 	i.topButton.Refresh()
 
-	i.bottomButton.Label = i.LabelBottom
+	i.bottomButton.Label = i.BottomText
 	i.bottomButton.OnTapped = i.OnTappedBottom
 	i.bottomButton.Refresh()
 }
@@ -102,19 +102,24 @@ func (r *miniButtonPairRenderer) Layout(s fyne.Size) {
 	minSize := r.i.topButton.MinSize()
 	minSize.Height += (r.i.bottomButton.MinSize().Height + 1.0)
 	minSize.Width += 2.0
+
 	pos := fyne.NewPos(
 		(s.Width-minSize.Width)/2,
 		(s.Height-minSize.Height)/2,
 	)
+
 	size := minSize
 	size.Height -= (r.i.bottomButton.MinSize().Height + 1.0)
 	if !r.i.unsquare {
 		size = fyne.NewSquareSize(fyne.Min(size.Width, size.Height))
 	}
+
 	r.i.topButton.Move(pos)
 	r.i.topButton.Resize(size)
+
 	pos.Y += r.i.topButton.Size().Height
 	pos.Y += 1.0 // space between buttons
+
 	r.i.bottomButton.Move(pos)
 	r.i.bottomButton.Resize(size)
 }
@@ -127,11 +132,13 @@ func (r *miniButtonPairRenderer) MinSize() fyne.Size {
 			r.i.topButton.MinSize().Height,
 		),
 	)
+
 	size.Height += 1.0
 	size.Height += fyne.Max(
 		r.i.bottomButton.MinSize().Width,
 		r.i.bottomButton.MinSize().Height,
 	)
+
 	return size
 }
 
