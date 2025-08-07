@@ -1,7 +1,9 @@
 package midget
 
 import (
+	"errors"
 	"math"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
@@ -10,6 +12,7 @@ import (
 )
 
 var _ fyne.Widget = (*IntEntry)(nil)
+var _ NumericEntry = (*IntEntry)(nil)
 
 type IntEntry struct {
 	ttw.ToolTipWidget
@@ -32,7 +35,7 @@ func NewIntEntryWithData(i binding.Int) *IntEntry {
 	return ie
 }
 func NewIntEntryWithDataAndSpecs(i binding.Int, min, max, step int) *IntEntry {
-	ie := NewIntEntryWithSpecs(0, math.MaxInt, 1)
+	ie := NewIntEntryWithSpecs(min, max, step)
 	ie.Bind(i)
 	return ie
 }
@@ -40,6 +43,7 @@ func NewIntEntryWithSpecs(min, max, step int) *IntEntry {
 	ie := &IntEntry{
 		value: binding.NewInt(),
 	}
+	ie.ExtendBaseWidget(ie)
 	ie.entry = widget.NewEntry()
 	ie.entryMaxWidth = 100
 	ie.Min = min
@@ -56,19 +60,50 @@ func NewIntEntryWithSpecs(min, max, step int) *IntEntry {
 	onIncrement := func() {
 		v, _ := ie.value.Get()
 		if ie.Validate(v + ie.Step) {
-			ie.value.Set(v + step)
+			ie.value.Set(v + ie.Step)
+		} else {
+			if v+ie.Step > ie.Max {
+				ie.value.Set(ie.Max)
+			}
+			if v+ie.Step < ie.Min {
+				ie.value.Set(ie.Min)
+			}
 		}
 	}
 	onDecrement := func() {
 		v, _ := ie.value.Get()
 		if ie.Validate(v - ie.Step) {
-			ie.value.Set(v - step)
+			ie.value.Set(v - ie.Step)
+		} else {
+			if v-ie.Step > ie.Max {
+				ie.value.Set(ie.Max)
+			}
+			if v-ie.Step < ie.Min {
+				ie.value.Set(ie.Min)
+			}
 		}
 	}
 
 	ie.miniButtonPair = NewMiniButtonPair("▲", "▼", onIncrement, onDecrement)
-	ie.valueString = binding.IntToStringWithFormat(ie.value, ie.FormatString)
+	ie.valueString = binding.IntToString(ie.value)
+
 	ie.entry.Bind(ie.valueString)
+	ie.entry.Validator = func(s string) error {
+		i, _ := strconv.Atoi(s)
+		if !ie.Validate(i) {
+			return errors.New("invalid")
+		}
+		return nil
+	}
+	ie.entry.OnChanged = func(s string) {
+		i, _ := strconv.Atoi(s)
+		if i > ie.Max {
+			ie.value.Set(ie.Max)
+		}
+		if i < ie.Min {
+			ie.value.Set(ie.Min)
+		}
+	}
 	return ie
 }
 func (ie *IntEntry) Bind(bi binding.Int) {
@@ -81,6 +116,14 @@ func (ie *IntEntry) Unbind() {
 }
 func (ie *IntEntry) Validate(v int) bool {
 	return ie.validator(v)
+}
+func (ie *IntEntry) Disable() {
+	ie.entry.Disable()
+	ie.miniButtonPair.Disable()
+}
+func (ie *IntEntry) Enable() {
+	ie.entry.Enable()
+	ie.miniButtonPair.Enable()
 }
 
 func (ie *IntEntry) CreateRenderer() fyne.WidgetRenderer {
