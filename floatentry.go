@@ -10,6 +10,7 @@ import (
 )
 
 var _ fyne.Widget = (*FloatEntry)(nil)
+var _ NumericEntry = (*FloatEntry)(nil)
 
 type FloatEntry struct {
 	ttw.ToolTipWidget
@@ -24,15 +25,17 @@ type FloatEntry struct {
 }
 
 func NewFloatEntry() *FloatEntry {
-	return NewFloatEntryWithSpecs(0, math.MaxFloat64, 0.1)
+	min := math.MaxFloat64 * -1
+	return NewFloatEntryWithSpecs(min, math.MaxFloat64, 0.1)
 }
 func NewFloatEntryWithData(i binding.Float) *FloatEntry {
-	ie := NewFloatEntryWithDataAndSpecs(i, 0, math.MaxFloat64, 0.1)
+	min := math.MaxFloat64 * -1
+	ie := NewFloatEntryWithDataAndSpecs(i, min, math.MaxFloat64, 0.1)
 	ie.Bind(i)
 	return ie
 }
 func NewFloatEntryWithDataAndSpecs(i binding.Float, min, max, step float64) *FloatEntry {
-	ie := NewFloatEntryWithSpecs(0, math.MaxFloat64, 1)
+	ie := NewFloatEntryWithSpecs(min, max, step)
 	ie.Bind(i)
 	return ie
 }
@@ -40,6 +43,7 @@ func NewFloatEntryWithSpecs(min, max, step float64) *FloatEntry {
 	ie := &FloatEntry{
 		value: binding.NewFloat(),
 	}
+	ie.ExtendBaseWidget(ie)
 	ie.entry = widget.NewEntry()
 	ie.entryMaxWidth = 100
 	ie.Min = min
@@ -71,21 +75,29 @@ func NewFloatEntryWithSpecs(min, max, step float64) *FloatEntry {
 	ie.entry.Bind(ie.valueString)
 	return ie
 }
-func (ie *FloatEntry) Bind(bi binding.Float) {
-	ie.value = bi
-	intBinding := binding.FloatToStringWithFormat(ie.value, ie.FormatString)
-	ie.entry.Bind(intBinding)
+func (fe *FloatEntry) Bind(bi binding.Float) {
+	fe.value = bi
+	intBinding := binding.FloatToStringWithFormat(fe.value, fe.FormatString)
+	fe.entry.Bind(intBinding)
 }
-func (ie *FloatEntry) Unbind() {
-	ie.entry.Unbind()
+func (fe *FloatEntry) Unbind() {
+	fe.entry.Unbind()
 }
-func (ie *FloatEntry) Validate(v float64) bool {
-	return ie.validator(v)
+func (fe *FloatEntry) Validate(v float64) bool {
+	return fe.validator(v)
+}
+func (fe *FloatEntry) Disable() {
+	fe.entry.Disable()
+	fe.miniButtonPair.Disable()
+}
+func (fe *FloatEntry) Enable() {
+	fe.entry.Enable()
+	fe.miniButtonPair.Enable()
 }
 
-func (ie *FloatEntry) CreateRenderer() fyne.WidgetRenderer {
-	ie.ExtendBaseWidget(ie)
-	return &floatEntryRenderer{ie}
+func (fe *FloatEntry) CreateRenderer() fyne.WidgetRenderer {
+	fe.ExtendBaseWidget(fe)
+	return &floatEntryRenderer{fe}
 }
 
 var _ fyne.WidgetRenderer = (*floatEntryRenderer)(nil)
