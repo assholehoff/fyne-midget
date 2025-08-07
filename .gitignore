@@ -31,6 +31,9 @@ go.work.sum
 .idea/
 .vscode/
 
+# My scribblings
+anteckningar.org
+
 # Old and inactive
 *.inactive
 *.old
