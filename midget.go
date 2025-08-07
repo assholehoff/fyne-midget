@@ -13,12 +13,12 @@ const (
 	ButtonIconTrailingText
 )
 
-type LabelVerticalAlignment int
+type VerticalAlignment int
 
 const (
-	LabelAlignTop LabelVerticalAlignment = iota
-	LabelAlignCenter
-	LabelAlignBottom
+	AlignTop VerticalAlignment = iota
+	AlignCenter
+	AlignBottom
 )
 
 type SubtextPosition int
