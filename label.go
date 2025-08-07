@@ -20,7 +20,7 @@ var (
 	_ fyne.SecondaryTappable = (*Label)(nil)
 )
 
-/* A Label widget with a smaller descriptive text, click, right click and tooltip on hover */
+/* A ridiculously overspecced Label widget with a smaller descriptive text, click, right click and tooltip on hover */
 type Label struct {
 	ttw.ToolTipWidget
 	Text       string
@@ -32,7 +32,7 @@ type Label struct {
 	SizeName   fyne.ThemeSizeName
 	Selectable bool
 
-	VerticalAlignment LabelVerticalAlignment
+	VerticalAlignment VerticalAlignment
 	scale             MidgetScale
 	color             fyne.ThemeColorName
 	subcolor          fyne.ThemeColorName
@@ -57,7 +57,7 @@ func NewLabel(text, subtext, tooltip string) *Label {
 	return NewLabelWithStyle(text, subtext, tooltip,
 		fyne.TextAlignLeading, fyne.TextAlignLeading,
 		fyne.TextStyle{}, fyne.TextStyle{},
-		SubtextBelowText, LabelAlignCenter,
+		SubtextBelowText, AlignCenter,
 	)
 }
 func NewLabelWithData(text, subtext, tooltip binding.String) *Label {
@@ -70,7 +70,7 @@ func NewLabelWithStyle(
 	textAlignment, subAlignment fyne.TextAlign,
 	textStyle, subStyle fyne.TextStyle,
 	subPosition SubtextPosition,
-	verticalAlignment LabelVerticalAlignment,
+	verticalAlignment VerticalAlignment,
 ) *Label {
 	label := &Label{
 		Text:              text,
@@ -126,15 +126,21 @@ func (l *Label) UnbindSubtext() {
 func (l *Label) UnbindTooltip() {
 	l.tipBinder.Unbind()
 }
-func (l *Label) SetText(s string)                  { l.Text = s }
-func (l *Label) SetSubtext(s string)               { l.Subtext = s }
-func (l *Label) SetColor(c fyne.ThemeColorName)    { l.color = c }
-func (l *Label) SetSubColor(c fyne.ThemeColorName) { l.subcolor = c }
-func (l *Label) SetSubVisible()                    { l.subInvisible = false }
-func (l *Label) SetSubInvisible()                  { l.subInvisible = true }
-func (l *Label) SetScale(n MidgetScale)            { l.scale = n }
-func (l *Label) SetBottom()                        { l.SubPosition = SubtextBelowText }
-func (l *Label) SetTop()                           { l.SubPosition = SubtextAboveText }
+func (l *Label) SetText(s string)    { l.Text = s }
+func (l *Label) SetSubtext(s string) { l.Subtext = s }
+func (l *Label) SetColor(c fyne.ThemeColorName) {
+	l.color = c
+	l.Refresh()
+}
+func (l *Label) SetSubColor(c fyne.ThemeColorName) {
+	l.subcolor = c
+	l.Refresh()
+}
+func (l *Label) SetSubVisible()         { l.subInvisible = false }
+func (l *Label) SetSubInvisible()       { l.subInvisible = true }
+func (l *Label) SetScale(n MidgetScale) { l.scale = n }
+func (l *Label) SetBottom()             { l.SubPosition = SubtextBelowText }
+func (l *Label) SetTop()                { l.SubPosition = SubtextAboveText }
 func (l *Label) ToggleSubtext() {
 	if l.subInvisible {
 		l.SetSubVisible()
@@ -145,8 +151,17 @@ func (l *Label) ToggleSubtext() {
 	}
 }
 
+func (l *Label) MinSize() fyne.Size {
+	l.ExtendBaseWidget(l)
+	return l.BaseWidget.MinSize()
+}
+
 /* CreateRenderer implements fyne.Widget */
 func (l *Label) CreateRenderer() fyne.WidgetRenderer {
+	// l.textProvider = widget.NewRichTextFromMarkdown(l.Text)
+	// l.subProvider = widget.NewRichTextFromMarkdown(l.Subtext)
+	l.ExtendBaseWidget(l)
+
 	text := &canvas.Text{
 		Alignment: l.Alignment,
 		Color:     theme.Color(l.color),
@@ -173,19 +188,16 @@ func (l *Label) CreateRenderer() fyne.WidgetRenderer {
 
 /* Tapped implements fyne.Tappable. */
 func (l *Label) Tapped(event *fyne.PointEvent) {
-	log.Printf("Tapped()")
 	l.OnTapped(event)
 }
 
 /* DoubleTapped implements fyne.DoubleTappable. */
 func (l *Label) DoubleTapped(event *fyne.PointEvent) {
-	log.Printf("DoubleTapped()")
 	l.OnDoubleTapped(event)
 }
 
 /* TappedSecondary implements fyne.SecondaryTappable. */
 func (l *Label) TappedSecondary(event *fyne.PointEvent) {
-	log.Printf("TappedSecondary()")
 	l.OnTappedSecondary(event)
 }
 
@@ -204,6 +216,7 @@ func (l *Label) updateTextFromData(data binding.DataItem) {
 		return
 	}
 	l.SetText(val)
+	l.Refresh()
 }
 func (l *Label) updateSubtextFromData(data binding.DataItem) {
 	if data == nil {
@@ -220,6 +233,7 @@ func (l *Label) updateSubtextFromData(data binding.DataItem) {
 		return
 	}
 	l.SetSubtext(val)
+	l.Refresh()
 }
 func (l *Label) updateTooltipFromData(data binding.DataItem) {
 	if data == nil {
@@ -236,6 +250,7 @@ func (l *Label) updateTooltipFromData(data binding.DataItem) {
 		return
 	}
 	l.SetToolTip(val)
+	l.Refresh()
 }
 
 var _ fyne.WidgetRenderer = (*labelRenderer)(nil)
@@ -251,90 +266,107 @@ func (r *labelRenderer) Destroy() {
 
 /* Layout implements fyne.WidgetRenderer. */
 func (r *labelRenderer) Layout(s fyne.Size) {
+	// text := r.label.textProvider
+	// subtext := r.label.subProvider
+	text := r.text
+	subtext := r.subtext
+
 	size := s
 	size.Width -= theme.InnerPadding()
 	size.Height -= theme.InnerPadding()
 
 	primSize := size
 	if !r.label.subInvisible {
-		primSize.Height -= r.subtext.MinSize().Height
+		primSize.Height -= subtext.MinSize().Height
 	}
 
 	pos := fyne.NewSquareOffsetPos(theme.InnerPadding())
 
-	r.text.Resize(primSize)
+	text.Resize(primSize)
 
 	switch r.label.VerticalAlignment {
-	case LabelAlignCenter:
-		if !r.label.subInvisible {
-			subSize := size
-			subSize.Height -= r.text.Size().Height
-			r.subtext.Resize(subSize)
-			if r.label.SubPosition == SubtextAboveText {
-				pos.Y = ((s.Height - subSize.Height) - r.text.Size().Height) / 2
-				r.subtext.Move(pos)
-				pos.Y += subSize.Height
-			} else {
-				pos.Y = (((s.Height - subSize.Height) - r.text.Size().Height) / 2) - subSize.Height
-				r.subtext.Move(pos)
-				pos.Y += subSize.Height
-			}
-		} else {
-			pos.Y = (s.Height - r.text.Size().Height) / 2
-		}
-	case LabelAlignTop:
+	case AlignTop:
 		pos.Y = theme.InnerPadding()
 		if !r.label.subInvisible {
-			subSize := size
-			subSize.Height -= r.text.Size().Height
-			r.subtext.Resize(subSize)
+			subSize := subtext.MinSize()
+			subSize.Height -= text.Size().Height
+			subtext.Resize(subSize)
 			if r.label.SubPosition == SubtextAboveText {
-				r.subtext.Move(pos)
+				subtext.Move(pos)
 				pos.Y += subSize.Height
 			} else {
-				pos.Y += r.text.Size().Height
-				r.subtext.Move(pos)
-				pos.Y -= r.text.Size().Height
+				pos.Y += text.Size().Height
+				subtext.Move(pos)
+				pos.Y -= text.Size().Height
 			}
 		}
-	case LabelAlignBottom:
-		pos.Y = size.Height
+	case AlignCenter:
 		if !r.label.subInvisible {
-			subSize := size
-			subSize.Height -= r.text.Size().Height
-			r.subtext.Resize(subSize)
+			subSize := subtext.MinSize()
+			subtext.Resize(subSize)
 			if r.label.SubPosition == SubtextAboveText {
-				pos.Y -= (r.subtext.Size().Height + r.text.Size().Height)
-				r.subtext.Move(pos)
-				pos.Y += r.subtext.Size().Height
+				pos.Y = (s.Height - text.Size().Height - subSize.Height) / 2
+				subtext.Move(pos)
+				pos.Y += subSize.Height
 			} else {
-				pos.Y -= r.subtext.Size().Height
-				r.subtext.Move(pos)
-				pos.Y -= r.text.Size().Height
+				pos.Y = (s.Height - text.Size().Height - subSize.Height) / 2
+				pos.Y += text.Size().Height
+				subtext.Move(pos)
+				pos.Y -= text.Size().Height
 			}
 		} else {
-			pos.Y -= r.text.Size().Height
+			pos.Y = (s.Height - text.Size().Height) / 2
+		}
+	case AlignBottom:
+		pos.Y = size.Height
+		if !r.label.subInvisible {
+			subSize := subtext.MinSize()
+			subSize.Height -= text.Size().Height
+			subtext.Resize(subSize)
+			if r.label.SubPosition == SubtextAboveText {
+				pos.Y -= (subtext.Size().Height + text.Size().Height)
+				subtext.Move(pos)
+				pos.Y += subtext.Size().Height
+			} else {
+				pos.Y -= subtext.Size().Height
+				subtext.Move(pos)
+				pos.Y -= text.Size().Height
+			}
+		} else {
+			pos.Y -= text.Size().Height
 		}
 	}
 
-	r.text.Move(pos)
+	text.Move(pos)
 }
 
 /* MinSize implements fyne.WidgetRenderer. */
 func (r *labelRenderer) MinSize() fyne.Size {
-	size := r.text.MinSize()
-	size.Width = fyne.Max(size.Width, r.subtext.MinSize().Width)
-	size.Height += r.subtext.MinSize().Height
+	// text := r.label.textProvider
+	// subtext := r.label.subProvider
+	text := r.text
+	subtext := r.subtext
+
+	size := text.MinSize()
+	size.Width = fyne.Max(size.Width, subtext.MinSize().Width)
+
 	if !r.label.subInvisible {
-		size.Height += r.subtext.MinSize().Height
+		size.Height += subtext.MinSize().Height
 	}
+
 	size.Width += theme.InnerPadding()
+	size.Height += theme.InnerPadding()
+
 	return size
 }
 
 /* Objects implements fyne.WidgetRenderer. */
 func (r *labelRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{r.text, r.subtext}
+	// text := r.label.textProvider
+	// subtext := r.label.subProvider
+	text := r.text
+	subtext := r.subtext
+	return []fyne.CanvasObject{text, subtext}
 }
 
 /* Refresh implements fyne.WidgetRenderer. */
@@ -350,14 +382,9 @@ func (r *labelRenderer) Refresh() {
 	r.Layout(r.label.Size())
 }
 func (r *labelRenderer) applyTheme() {
-	fgColorName := r.labelColorName()
-	r.text.Color = theme.Color(fgColorName)
+	r.text.Color = theme.Color(r.label.color)
+	r.subtext.Color = theme.Color(r.label.subcolor)
 	r.text.Refresh()
-}
-func (r *labelRenderer) labelColorName() fyne.ThemeColorName {
-	foreground := theme.ColorNameForeground
-	// background = theme.ColorNameBackground
-	return foreground
 }
 func (r *labelRenderer) updateText() {
 	r.text.Text = r.label.Text
@@ -372,14 +399,14 @@ func (r *labelRenderer) updateText() {
 	r.subtext.TextStyle = r.label.SubStyle
 	r.subtext.Refresh()
 }
-func alignedLabelPosition(align LabelVerticalAlignment, padding, objectSize, layoutSize fyne.Size) (pos fyne.Position) {
+func alignedLabelPosition(align VerticalAlignment, padding, objectSize, layoutSize fyne.Size) (pos fyne.Position) {
 	pos.Y = (layoutSize.Height - objectSize.Height) / 2
 	switch align {
-	case LabelAlignCenter:
+	case AlignCenter:
 		pos.X = (layoutSize.Width - objectSize.Width) / 2
-	case LabelAlignTop:
+	case AlignTop:
 		pos.X = padding.Width / 2
-	case LabelAlignBottom:
+	case AlignBottom:
 		pos.X = layoutSize.Width - objectSize.Width - padding.Width/2
 	}
 	return
