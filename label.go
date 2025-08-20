@@ -126,8 +126,14 @@ func (l *Label) UnbindSubtext() {
 func (l *Label) UnbindTooltip() {
 	l.tipBinder.Unbind()
 }
-func (l *Label) SetText(s string)    { l.Text = s }
-func (l *Label) SetSubtext(s string) { l.Subtext = s }
+func (l *Label) SetText(s string) {
+	l.Text = s
+	l.Refresh()
+}
+func (l *Label) SetSubtext(s string) {
+	l.Subtext = s
+	l.Refresh()
+}
 func (l *Label) SetColor(c fyne.ThemeColorName) {
 	l.color = c
 	l.Refresh()
@@ -136,11 +142,26 @@ func (l *Label) SetSubColor(c fyne.ThemeColorName) {
 	l.subcolor = c
 	l.Refresh()
 }
-func (l *Label) SetSubVisible()         { l.subInvisible = false }
-func (l *Label) SetSubInvisible()       { l.subInvisible = true }
-func (l *Label) SetScale(n MidgetScale) { l.scale = n }
-func (l *Label) SetBottom()             { l.SubPosition = SubtextBelowText }
-func (l *Label) SetTop()                { l.SubPosition = SubtextAboveText }
+func (l *Label) SetSubVisible() {
+	l.subInvisible = false
+	l.Refresh()
+}
+func (l *Label) SetSubInvisible() {
+	l.subInvisible = true
+	l.Refresh()
+}
+func (l *Label) SetScale(n MidgetScale) {
+	l.scale = n
+	l.Refresh()
+}
+func (l *Label) SetBottom() {
+	l.SubPosition = SubtextBelowText
+	l.Refresh()
+}
+func (l *Label) SetTop() {
+	l.SubPosition = SubtextAboveText
+	l.Refresh()
+}
 func (l *Label) ToggleSubtext() {
 	if l.subInvisible {
 		l.SetSubVisible()
@@ -289,7 +310,7 @@ func (r *labelRenderer) Layout(s fyne.Size) {
 		pos.Y = theme.InnerPadding()
 		if !r.label.subInvisible {
 			subSize := subtext.MinSize()
-			subSize.Height -= text.Size().Height
+			// subSize.Height -= text.Size().Height
 			subtext.Resize(subSize)
 			if r.label.SubPosition == SubtextAboveText {
 				subtext.Move(pos)
@@ -304,12 +325,11 @@ func (r *labelRenderer) Layout(s fyne.Size) {
 		if !r.label.subInvisible {
 			subSize := subtext.MinSize()
 			subtext.Resize(subSize)
+			pos.Y = (s.Height - text.Size().Height - subSize.Height) / 2
 			if r.label.SubPosition == SubtextAboveText {
-				pos.Y = (s.Height - text.Size().Height - subSize.Height) / 2
 				subtext.Move(pos)
 				pos.Y += subSize.Height
 			} else {
-				pos.Y = (s.Height - text.Size().Height - subSize.Height) / 2
 				pos.Y += text.Size().Height
 				subtext.Move(pos)
 				pos.Y -= text.Size().Height
@@ -321,7 +341,7 @@ func (r *labelRenderer) Layout(s fyne.Size) {
 		pos.Y = size.Height
 		if !r.label.subInvisible {
 			subSize := subtext.MinSize()
-			subSize.Height -= text.Size().Height
+			// subSize.Height -= text.Size().Height
 			subtext.Resize(subSize)
 			if r.label.SubPosition == SubtextAboveText {
 				pos.Y -= (subtext.Size().Height + text.Size().Height)
