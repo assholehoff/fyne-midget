@@ -2,27 +2,28 @@
 
 Various widgets for the Fyne GUI toolkit. Made or augmented by me.
 ```Go
-type Number interface {
-    ~float64 | ~int | ~int64
+type FloatEntry struct {
+	ttw.ToolTipWidget
+	value          binding.Float
+	valueString    binding.String
+	entry          *widget.Entry
+	entryMaxWidth  float32
+	FormatString   string
+	miniButtonPair *MiniButtonPair
+	Min, Max, Step float64
+	validator      func(float64) bool
 }
 
-type NumericEnterface[T Number] interface {
-    SetMax(v T)
-    SetMin(v T)
-    SetStep(v T)
-    Bind(di binding.DataItem)
-    Unbind()
-}
-
-type NumericEntry[T Number] struct {
-    ttw.ToolTipWidget
-    value           binding.DataItem
-    valString       binding.String
-    valEntry        *widget.Entry
-    valFormatString string
-    miniButtonPair  *MiniButtonPair
-    min, max, step  T
-    validator       func(T) bool
+type IntEntry struct {
+	ttw.ToolTipWidget
+	value          binding.Int
+	valueString    binding.String
+	entry          *widget.Entry
+	entryMaxWidth  float32
+	FormatString   string
+	miniButtonPair *MiniButtonPair
+	Min, Max, Step int
+	validator      func(int) bool
 }
 ```
 
