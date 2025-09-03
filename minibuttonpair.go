@@ -156,22 +156,20 @@ func (r *miniButtonPairRenderer) Refresh() {
 var (
 	_ desktop.Hoverable = (*miniButton)(nil)
 	_ fyne.Disableable  = (*miniButton)(nil)
-	_ fyne.Focusable    = (*miniButton)(nil)
 	_ fyne.Tappable     = (*miniButton)(nil)
 )
 
 type miniButton struct {
 	ttw.ToolTipWidget
-	// ▲▼
-	Icon             fyne.Resource
-	Label            string
-	Alignment        widget.ButtonAlign
-	Importance       widget.Importance
-	OnTapped         func()
-	disabled         bool
-	hovered, focused bool
-	unsquare         bool
-	tapAnim          *fyne.Animation
+	Icon       fyne.Resource
+	Label      string
+	Alignment  widget.ButtonAlign
+	Importance widget.Importance
+	OnTapped   func()
+	disabled   bool
+	hovered    bool
+	unsquare   bool
+	tapAnim    *fyne.Animation
 }
 
 func newMiniButton(s string, f func()) *miniButton {
@@ -198,21 +196,6 @@ func (b *miniButton) Disable() {
 func (b *miniButton) Enable() {
 	b.disabled = false
 	b.Refresh()
-}
-func (b *miniButton) FocusGained() {
-	b.focused = true
-	b.Refresh()
-}
-func (b *miniButton) FocusLost() {
-	b.focused = false
-	b.Refresh()
-}
-func (b *miniButton) TypedKey(ev *fyne.KeyEvent) {
-	if ev.Name == fyne.KeySpace {
-		b.Tapped(nil)
-	}
-}
-func (b *miniButton) TypedRune(rune) {
 }
 func (b *miniButton) MouseIn(*desktop.MouseEvent) {
 	b.hovered = true
@@ -301,8 +284,6 @@ func (r *miniButtonRenderer) buttonColorNames() (foreground, background, backgro
 		if b.Importance != widget.LowImportance {
 			background = theme.ColorNameDisabledButton
 		}
-	} else if b.focused {
-		backgroundBlend = theme.ColorNameFocus
 	} else if b.hovered {
 		backgroundBlend = theme.ColorNameHover
 	}

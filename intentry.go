@@ -7,18 +7,16 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/widget"
 	ttw "github.com/dweymouth/fyne-tooltip/widget"
 )
 
 var _ fyne.Widget = (*IntEntry)(nil)
-var _ NumericEntry = (*IntEntry)(nil)
 
 type IntEntry struct {
 	ttw.ToolTipWidget
 	value          binding.Int
 	valueString    binding.String
-	entry          *widget.Entry
+	entry          *NumericEntry
 	entryMaxWidth  float32
 	FormatString   string
 	miniButtonPair *MiniButtonPair
@@ -44,7 +42,7 @@ func NewIntEntryWithSpecs(min, max, step int) *IntEntry {
 		value: binding.NewInt(),
 	}
 	ie.ExtendBaseWidget(ie)
-	ie.entry = widget.NewEntry()
+	ie.entry = NewNumericEntry()
 	ie.entryMaxWidth = 100
 	ie.Min = min
 	ie.Max = max
@@ -87,6 +85,9 @@ func NewIntEntryWithSpecs(min, max, step int) *IntEntry {
 	ie.miniButtonPair = NewMiniButtonPair("▲", "▼", onIncrement, onDecrement)
 	ie.valueString = binding.IntToString(ie.value)
 
+	ie.entry.onIncrement = onIncrement
+	ie.entry.onDecrement = onDecrement
+
 	ie.entry.Bind(ie.valueString)
 	ie.entry.Validator = func(s string) error {
 		i, _ := strconv.Atoi(s)
@@ -124,6 +125,12 @@ func (ie *IntEntry) Disable() {
 func (ie *IntEntry) Enable() {
 	ie.entry.Enable()
 	ie.miniButtonPair.Enable()
+}
+func (ie *IntEntry) Increment() {
+	ie.miniButtonPair.OnTappedTop()
+}
+func (ie *IntEntry) Decrement() {
+	ie.miniButtonPair.OnTappedBottom()
 }
 
 func (ie *IntEntry) CreateRenderer() fyne.WidgetRenderer {

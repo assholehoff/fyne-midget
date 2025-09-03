@@ -1,22 +1,22 @@
 package midget
 
 import (
+	"errors"
 	"math"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/widget"
 	ttw "github.com/dweymouth/fyne-tooltip/widget"
 )
 
 var _ fyne.Widget = (*FloatEntry)(nil)
-var _ NumericEntry = (*FloatEntry)(nil)
 
 type FloatEntry struct {
 	ttw.ToolTipWidget
 	value          binding.Float
 	valueString    binding.String
-	entry          *widget.Entry
+	entry          *NumericEntry
 	entryMaxWidth  float32
 	FormatString   string
 	miniButtonPair *MiniButtonPair
@@ -30,50 +30,70 @@ func NewFloatEntry() *FloatEntry {
 }
 func NewFloatEntryWithData(i binding.Float) *FloatEntry {
 	min := math.MaxFloat64 * -1
-	ie := NewFloatEntryWithDataAndSpecs(i, min, math.MaxFloat64, 0.1)
-	ie.Bind(i)
-	return ie
+	fe := NewFloatEntryWithDataAndSpecs(i, min, math.MaxFloat64, 0.1)
+	fe.Bind(i)
+	return fe
 }
 func NewFloatEntryWithDataAndSpecs(i binding.Float, min, max, step float64) *FloatEntry {
-	ie := NewFloatEntryWithSpecs(min, max, step)
-	ie.Bind(i)
-	return ie
+	fe := NewFloatEntryWithSpecs(min, max, step)
+	fe.Bind(i)
+	return fe
 }
 func NewFloatEntryWithSpecs(min, max, step float64) *FloatEntry {
-	ie := &FloatEntry{
+	fe := &FloatEntry{
 		value: binding.NewFloat(),
 	}
-	ie.ExtendBaseWidget(ie)
-	ie.entry = widget.NewEntry()
-	ie.entryMaxWidth = 100
-	ie.Min = min
-	ie.Max = max
-	ie.Step = step
-	ie.FormatString = "%.2f"
+	fe.ExtendBaseWidget(fe)
+	fe.entry = NewNumericEntry()
+	fe.entryMaxWidth = 100
+	fe.Min = min
+	fe.Max = max
+	fe.Step = step
+	fe.FormatString = "%.2f"
 
-	ie.validator = func(i float64) bool {
-		if i >= ie.Min && i <= ie.Max {
+	fe.validator = func(i float64) bool {
+		if i >= fe.Min && i <= fe.Max {
 			return true
 		}
 		return false
 	}
 	onIncrement := func() {
-		v, _ := ie.value.Get()
-		if ie.Validate(v + ie.Step) {
-			ie.value.Set(v + step)
+		v, _ := fe.value.Get()
+		if fe.Validate(v + fe.Step) {
+			fe.value.Set(v + step)
 		}
 	}
 	onDecrement := func() {
-		v, _ := ie.value.Get()
-		if ie.Validate(v - ie.Step) {
-			ie.value.Set(v - step)
+		v, _ := fe.value.Get()
+		if fe.Validate(v - fe.Step) {
+			fe.value.Set(v - step)
 		}
 	}
 
-	ie.miniButtonPair = NewMiniButtonPair("▲", "▼", onIncrement, onDecrement)
-	ie.valueString = binding.FloatToStringWithFormat(ie.value, ie.FormatString)
-	ie.entry.Bind(ie.valueString)
-	return ie
+	fe.miniButtonPair = NewMiniButtonPair("▲", "▼", onIncrement, onDecrement)
+	fe.valueString = binding.FloatToStringWithFormat(fe.value, fe.FormatString)
+
+	fe.entry.onIncrement = onIncrement
+	fe.entry.onDecrement = onDecrement
+
+	fe.entry.Bind(fe.valueString)
+	fe.entry.Validator = func(s string) error {
+		f, _ := strconv.ParseFloat(s, 64)
+		if !fe.Validate(f) {
+			return errors.New("invalid")
+		}
+		return nil
+	}
+	fe.entry.OnChanged = func(s string) {
+		f, _ := strconv.ParseFloat(s, 64)
+		if f > fe.Max {
+			fe.value.Set(fe.Max)
+		}
+		if f < fe.Min {
+			fe.value.Set(fe.Min)
+		}
+	}
+	return fe
 }
 func (fe *FloatEntry) Bind(bi binding.Float) {
 	fe.value = bi
@@ -93,6 +113,12 @@ func (fe *FloatEntry) Disable() {
 func (fe *FloatEntry) Enable() {
 	fe.entry.Enable()
 	fe.miniButtonPair.Enable()
+}
+func (fe *FloatEntry) Increment() {
+	fe.miniButtonPair.OnTappedTop()
+}
+func (fe *FloatEntry) Decrement() {
+	fe.miniButtonPair.OnTappedBottom()
 }
 
 func (fe *FloatEntry) CreateRenderer() fyne.WidgetRenderer {
