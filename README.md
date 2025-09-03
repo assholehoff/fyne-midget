@@ -36,7 +36,7 @@ type MiniButtonPair struct {
 
 ## Numeric entries
 
-Entry fields with two buttons (a `MiniButtonPair`) for increment and decrement, also bound to `fyne.KeyUp` and `fyne.KeyDown`
+`fyne.KeyUp` and `fyne.KeyDown` are bound to `onIncrement` and `onDecrement` repectively
 
 ```Go
 type NumericEntry struct {
@@ -44,7 +44,12 @@ type NumericEntry struct {
     onIncrement func()
     onDecrement func()
 }
+```
 
+Entry fields with two buttons (a `MiniButtonPair`) for increment and decrement, also bound to `fyne.KeyUp` and `fyne.KeyDown`
+
+
+```Go
 type IntEntry struct {
     ttw.ToolTipWidget
     value          binding.Int
